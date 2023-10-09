@@ -102,7 +102,7 @@ void Game::loop()
                 }
             }
 
-            if (pauseTime != 0 && currentTime - pauseTime > 3000)
+            if (pauseTime != 0 && currentTime - pauseTime > 100)
                 pauseTime = 0;
 
             if (pauseTime == 0)
