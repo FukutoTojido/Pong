@@ -7,6 +7,7 @@
 #include <string>
 #include "Object.h"
 #include "Ball.h"
+#include <time.h>
 
 class Game
 {

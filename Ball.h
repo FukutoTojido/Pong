@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Object.h"
+#include <time.h>
 
 class Ball : public Object
 {
