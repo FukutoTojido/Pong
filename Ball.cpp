@@ -1,7 +1,7 @@
 #include "Ball.h"
 #include "Game.h"
 
-Ball::Ball(SDL_PixelFormat *fmt) : Object(fmt, Game::SCREEN_WIDTH / 2 - 5, Game::SCREEN_HEIGHT / 2 - 5, 10, 10)
+Ball::Ball(SDL_Renderer *renderer, SDL_PixelFormat *fmt) : Object(renderer, fmt, Game::SCREEN_WIDTH / 2 - 5, Game::SCREEN_HEIGHT / 2 - 5, 10, 10)
 {
     // Randomize Direction Vector for BALL!
     bool rand_x = rand() & 1;
@@ -22,7 +22,9 @@ Ball::Ball(SDL_PixelFormat *fmt) : Object(fmt, Game::SCREEN_WIDTH / 2 - 5, Game:
     this->directionVector[1] = vec_y / length;
     this->setCorners(Game::SCREEN_WIDTH / 2 - 5, Game::SCREEN_HEIGHT / 2 - 5);
 
+    SDL_DestroyTexture(this->texture);
     SDL_FillRect(this->surface, NULL, SDL_MapRGB(fmt, 0xFF, 0x00, 0x00));
+    this->texture = SDL_CreateTextureFromSurface(renderer, this->surface);
 }
 
 void Ball::update(double delta_t, Object *player1, Object *player2)
@@ -35,6 +37,13 @@ void Ball::update(double delta_t, Object *player1, Object *player2)
     if (new_x > Game::SCREEN_WIDTH - 10 || new_x < 0)
     {
         this->reachedBorder = true;
+
+        if (new_x > Game::SCREEN_WIDTH - 10)
+            Game::scoreLeft += 1;
+
+        if (new_x < 0)
+            Game::scoreRight += 1;
+
         return;
     }
 

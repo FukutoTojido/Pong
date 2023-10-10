@@ -45,22 +45,30 @@ int Game::init()
         Game::SCREEN_HEIGHT,
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
-    if (!window)
+    if (!this->window)
     {
         std::cout << "Cannot create window" << '\n';
         return -1;
     }
 
+    // Create renderer
+    this->renderer = SDL_CreateRenderer(this->window, -1, 0);
+    if (!this->renderer)
+    {
+        std::cout << "Cannot create renderer" << '\n';
+        return -1;
+    }
+
     // Create font
-    font = TTF_OpenFont("./font.ttf", 24);
-    if (!font)
+    this->font = TTF_OpenFont("./font.ttf", 48);
+    if (!this->font)
     {
         std::cout << "Cannot load font: " << TTF_GetError() << '\n';
         return -1;
     }
 
-    this->textLeft = TTF_RenderText_Solid(font, "0", {0xff, 0xff, 0xff});
-    this->textRight = TTF_RenderText_Solid(font, "0", {0xff, 0xff, 0xff});
+    this->textLeft = new Text("0", this->font, this->renderer, 300, 50);
+    this->textRight = new Text("0", this->font, this->renderer, Game::SCREEN_WIDTH - 300, 50);
 
     // Get window surface and fill
     this->surface = SDL_GetWindowSurface(this->window);
@@ -68,12 +76,12 @@ int Game::init()
     SDL_UpdateWindowSurface(this->window);
 
     // Load background
-    this->background = new Object(this->surface->format, "./background.png", 0, 0, Game::SCREEN_WIDTH, Game::SCREEN_HEIGHT);
+    this->background = new Object(this->renderer, this->surface->format, "./background.png", 0, 0, Game::SCREEN_WIDTH, Game::SCREEN_HEIGHT);
 
     // Load image and set positon
-    this->player1 = new Object(this->surface->format, 0, Game::SCREEN_HEIGHT / 2 - 50, 10, 100);
-    this->player2 = new Object(this->surface->format, Game::SCREEN_WIDTH - 10, Game::SCREEN_HEIGHT / 2 - 50, 10, 100);
-    this->ball = new Ball(this->surface->format);
+    this->player1 = new Object(this->renderer, this->surface->format, 0, Game::SCREEN_HEIGHT / 2 - 50, 10, 100);
+    this->player2 = new Object(this->renderer, this->surface->format, Game::SCREEN_WIDTH - 10, Game::SCREEN_HEIGHT / 2 - 50, 10, 100);
+    this->ball = new Ball(this->renderer, this->surface->format);
 
     return 0;
 }
@@ -119,6 +127,8 @@ void Game::loop()
                     this->player1->updatePos(this->player1->x, this->player1->y + this->player1->velocity * delta_t / 1000.0);
 
                 this->ball->update(delta_t, this->player1, this->player2);
+                this->textLeft->updateText(std::to_string(Game::scoreLeft));
+                this->textRight->updateText(std::to_string(Game::scoreRight));
                 this->update(delta_t);
 
                 if (this->ball->reachedBorder)
@@ -128,7 +138,7 @@ void Game::loop()
                     this->player2->updatePos(Game::SCREEN_WIDTH - 10, Game::SCREEN_HEIGHT / 2 - 50);
                     this->update(delta_t);
 
-                    this->ball = new Ball(this->surface->format);
+                    this->ball = new Ball(this->renderer, this->surface->format);
                     pauseTime = currentTime;
                 }
             }
@@ -145,23 +155,36 @@ void Game::loop()
 void Game::update(int delta_t)
 {
     // Clear everything
-    // SDL_FillRect(this->surface, NULL, SDL_MapRGB(this->surface->format, 0x0, 0x0, 0x0));
-    SDL_BlitScaled(this->background->surface, NULL, this->surface, &(this->background->pos));
+    SDL_RenderClear(this->renderer);
+
+    // SDL_BlitScaled(this->background->surface, NULL, this->surface, &(this->background->pos));
+    SDL_RenderCopy(this->renderer, this->background->texture, NULL, &(this->background->pos));
 
     // Do something here
-    SDL_BlitScaled(this->player1->surface, NULL, this->surface, &(this->player1->pos));
-    SDL_BlitScaled(this->player2->surface, NULL, this->surface, &(this->player2->pos));
+    // SDL_BlitScaled(this->player1->surface, NULL, this->surface, &(this->player1->pos));
+    // SDL_BlitScaled(this->player2->surface, NULL, this->surface, &(this->player2->pos));
+    SDL_RenderCopy(this->renderer, this->player1->texture, NULL, &(this->player1->pos));
+    SDL_RenderCopy(this->renderer, this->player2->texture, NULL, &(this->player2->pos));
 
     if (!this->ball->reachedBorder)
-        SDL_BlitScaled(this->ball->surface, NULL, this->surface, &(this->ball->pos));
+        // SDL_BlitScaled(this->ball->surface, NULL, this->surface, &(this->ball->pos));
+        SDL_RenderCopy(this->renderer, this->ball->texture, NULL, &(this->ball->pos));
 
     // Update window
-    SDL_UpdateWindowSurface(this->window);
+    SDL_RenderCopy(this->renderer, this->textLeft->texture, NULL, &this->textLeft->rect);
+    SDL_RenderCopy(this->renderer, this->textRight->texture, NULL, &this->textRight->rect);
+    SDL_RenderPresent(renderer);
+    // SDL_UpdateWindowSurface(this->window);
 }
 
 Game::~Game()
 {
+    // Close font
+    TTF_CloseFont(this->font);
+    TTF_Quit();
+
     // End process
+    SDL_DestroyRenderer(this->renderer);
     SDL_DestroyWindow(this->window);
     SDL_Quit();
 }

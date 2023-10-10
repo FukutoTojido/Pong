@@ -7,25 +7,27 @@
 #include <string>
 #include "Object.h"
 #include "Ball.h"
+#include "Text.h"
 #include <time.h>
 
 class Game
 {
 private:
+    SDL_Renderer *renderer = NULL;
     SDL_Window *window = NULL;
     SDL_Surface *surface = NULL;
-    SDL_Surface* textLeft = NULL;
-    SDL_Surface* textRight = NULL;
+    Text *textLeft = NULL;
+    Text *textRight = NULL;
     Object *player1, *player2;
-    Object* background;
+    Object *background;
     Ball *ball;
-    TTF_Font* font;
+    TTF_Font *font;
 
 public:
     inline static int SCREEN_WIDTH;
     inline static int SCREEN_HEIGHT;
-    inline static int scoreLeft;
-    inline static int scoreRight;
+    inline static int scoreLeft = 0;
+    inline static int scoreRight = 0;
 
     Game();
     Game(int, int);

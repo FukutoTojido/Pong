@@ -1,7 +1,7 @@
 #include "Game.h"
 #include "Object.h"
 
-Object::Object(SDL_PixelFormat *fmt, int x, int y, int w, int h)
+Object::Object(SDL_Renderer* renderer, SDL_PixelFormat *fmt, int x, int y, int w, int h)
 {
     try
     {
@@ -11,6 +11,9 @@ Object::Object(SDL_PixelFormat *fmt, int x, int y, int w, int h)
             throw "Cannot optimize image";
 
         this->surface = ret;
+        SDL_FillRect(ret, NULL, SDL_MapRGB(fmt, 0xFF, 0xFF, 0xFF));
+
+        this->texture = SDL_CreateTextureFromSurface(renderer, this->surface);
         this->pos.x = x;
         this->pos.y = y;
         this->pos.w = w;
@@ -19,7 +22,6 @@ Object::Object(SDL_PixelFormat *fmt, int x, int y, int w, int h)
         this->x = x;
         this->y = y;
 
-        SDL_FillRect(ret, NULL, SDL_MapRGB(fmt, 0xFF, 0xFF, 0xFF));
     }
     catch (const char *error)
     {
@@ -27,7 +29,7 @@ Object::Object(SDL_PixelFormat *fmt, int x, int y, int w, int h)
     }
 }
 
-Object::Object(SDL_PixelFormat *fmt, std::string path, int x, int y, int w, int h)
+Object::Object(SDL_Renderer* renderer, SDL_PixelFormat *fmt, std::string path, int x, int y, int w, int h)
 {
     try
     {
@@ -45,6 +47,7 @@ Object::Object(SDL_PixelFormat *fmt, std::string path, int x, int y, int w, int 
         SDL_FreeSurface(loaded);
 
         this->surface = ret;
+        this->texture = SDL_CreateTextureFromSurface(renderer, this->surface);
         this->pos.x = x;
         this->pos.y = y;
         this->pos.w = w;
@@ -79,5 +82,6 @@ void Object::updatePos(double x, double y)
 
 Object::~Object()
 {
+    SDL_DestroyTexture(this->texture);
     SDL_FreeSurface(this->surface);
 }

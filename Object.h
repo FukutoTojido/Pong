@@ -12,6 +12,7 @@ private:
 public:
     SDL_Surface *surface = NULL;
     SDL_Rect pos;
+    SDL_Texture *texture = NULL;
 
     double x;
     double y;
@@ -19,8 +20,8 @@ public:
     const int velocity = 1000;
 
     Object(){};
-    Object(SDL_PixelFormat *, int, int, int, int);
-    Object(SDL_PixelFormat *, std::string, int, int, int, int);
+    Object(SDL_Renderer*, SDL_PixelFormat *, int, int, int, int);
+    Object(SDL_Renderer*,SDL_PixelFormat *, std::string, int, int, int, int);
 
     void updatePos(double, double);
 
